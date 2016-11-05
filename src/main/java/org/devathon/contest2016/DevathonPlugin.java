@@ -3,6 +3,8 @@ package org.devathon.contest2016;
 import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
 
+
+
 public class DevathonPlugin extends JavaPlugin {
 
     public static DevathonPlugin INSTANCE;
@@ -15,13 +17,15 @@ public class DevathonPlugin extends JavaPlugin {
         // put your enable code here
         INSTANCE = this;
 
-        this.getConfig().addDefault("sign.head", "[machine]");
+        /*this.getConfig().addDefault("sign.head", "[machine]");
         this.getConfig().addDefault("machines.block", Material.IRON_BLOCK.toString());
         this.getConfig().options().copyDefaults(true);
-        this.saveConfig();
+        this.saveConfig();*/
+
+        this.saveDefaultConfig();
 
         SignHead = this.getConfig().getString("sign.head");
-        MachineBlock = Material.valueOf(this.getConfig().getString("machines.block").toUpperCase());
+        MachineBlock = Material.valueOf(this.getConfig().getString("machine.block").toUpperCase());
 
         getServer().getPluginManager().registerEvents(new Events(), this);
     }
@@ -29,6 +33,9 @@ public class DevathonPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         // put your disable code here
+        DevathonPlugin.INSTANCE.saveConfig();
     }
+
+
 }
 

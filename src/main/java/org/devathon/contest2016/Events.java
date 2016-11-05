@@ -51,9 +51,17 @@ public class Events implements Listener {
                 Block attachedBlock = block.getRelative(s.getAttachedFace());
 
                 if(attachedBlock.getType() == DevathonPlugin.INSTANCE.MachineBlock){
-                    event.getPlayer().sendMessage("Successfully created a machine! " + block.getType().toString());
+                    //event.getPlayer().sendMessage("Successfully created a machine! " + block.getType().toString());
+
+                    String machineSlug = event.getLines()[1].toLowerCase();
+
+                    Machine machine = Machine.findSlug(machineSlug);
+                    event.getPlayer().sendMessage("Created machine " + machine);
+
+                    machine.save(attachedBlock.getLocation());
+
                 } else {
-                    event.getPlayer().sendMessage(attachedBlock.getType().name() + " is not a valid machine block! Please use " + DevathonPlugin.INSTANCE.MachineBlock.);
+                    event.getPlayer().sendMessage(attachedBlock.getType().name() + " is not a valid machine block! Please use " + DevathonPlugin.INSTANCE.MachineBlock);
                 }
             } else{
                 event.getPlayer().sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "Machine sign must be placed on side of block! ");
@@ -61,4 +69,6 @@ public class Events implements Listener {
         }
         System.out.println(event.getLines()[0]);
     }
+
+
 }

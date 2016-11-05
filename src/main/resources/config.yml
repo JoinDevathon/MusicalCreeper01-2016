@@ -1,0 +1,19 @@
+sign:
+  head: '[machine]'
+machine:
+  block: IRON_BLOCK
+machines:
+  table_saw:
+    name: 'Table Saw'
+    slug: 'saw'
+    takes: LOG
+    makes: WOOD
+#    operation: '*'
+    diff: 8
+
+#world:
+#  machine:
+#    x: 0
+#    y: 0
+#    z: 0
+#    type: table_saw
