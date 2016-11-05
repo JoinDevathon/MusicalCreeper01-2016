@@ -1,16 +1,25 @@
 package org.devathon.contest2016;
 
+import net.minecraft.server.v1_10_R1.Item;
+import net.minecraft.server.v1_10_R1.NBTTagByte;
+import net.minecraft.server.v1_10_R1.NBTTagCompound;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+
+import org.bukkit.craftbukkit.v1_10_R1.inventory.CraftItemStack;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
@@ -85,10 +94,20 @@ public class Events implements Listener {
                         ArmorStand stand = event.getPlayer().getLocation().getWorld().spawn(armorStandLoc, ArmorStand.class);
                         stand.setBasePlate(false);
                         stand.setArms(false);
-                        stand.setHelmet(new ItemStack(DevathonPlugin.INSTANCE.MachineItem, 1, (short) machine.Damage));
+                        ItemStack stack = new ItemStack(DevathonPlugin.INSTANCE.MachineItem, 1, (short) machine.Damage);
+
+                        /*net.minecraft.server.v1_10_R1.ItemStack cStack = CraftItemStack.asNMSCopy(stack);
+                        NBTTagCompound tag = cStack.hasTag() ? cStack.getTag() : new NBTTagCompound();
+                        tag.set("Unbreakable", new NBTTagByte((byte)1));
+                        cStack.setTag(tag);
+                        stack = CraftItemStack.asBukkitCopy(cStack);*/
+
+                        stand.setHelmet(stack);
                         stand.setGravity(false);
                         stand.setInvulnerable(false);
-                        stand.setCustomName("Machine Armor Strand");
+                        stand.setCustomName("Machine Armor Stand");
+
+                        event.getPlayer().getWorld().getBlockAt(attachedBlock.getLocation()).setType(Material.AIR);
                     }
 
                     machine.save(attachedBlock.getLocation());
@@ -104,7 +123,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onBlockInteract (PlayerInteractEvent event) {
+    public void onInteract (PlayerInteractEvent event) {
         if(event.getAction() == Action.RIGHT_CLICK_BLOCK){
             Machine machine = Machine.get(event.getClickedBlock().getLocation());
             if(machine != null){
@@ -117,6 +136,73 @@ public class Events implements Listener {
                     player.sendMessage("Used machine!");
                     event.setCancelled(true);
                 }
+            }
+        }
+
+    }
+
+    @EventHandler
+    public void onArmorStandChange(PlayerArmorStandManipulateEvent event){
+        ArmorStand stand = event.getRightClicked();
+        if(stand.getCustomName().equalsIgnoreCase("Machine Armor Stand")){
+
+            System.out.println("armour stand clicked");
+
+            Player player = event.getPlayer();
+
+            Location pos = stand.getLocation();
+            pos.setX(pos.getX() - 0.5f);
+            pos.setY(pos.getY() + 1.2f);
+            pos.setZ(pos.getZ() - 0.5f);
+
+            System.out.println(pos.toString());
+
+            Machine machine = Machine.get(pos);
+            if(machine != null){
+                System.out.println("is machine");
+                ItemStack processed = machine.Use(player.getInventory().getItemInMainHand());
+                if(processed != null) {
+                    player.getInventory().addItem(processed);
+                    player.getInventory().remove(player.getInventory().getItemInMainHand());
+                    player.sendMessage("Used machine!");
+                    event.setCancelled(true);
+                }
+            }
+            event.setCancelled(true);
+        }
+
+    }
+
+    @EventHandler
+    public void onInteractWithEntity (PlayerInteractAtEntityEvent event){
+        Player player = event.getPlayer();
+        Entity entity = event.getRightClicked();
+
+        if(entity.getType() == EntityType.ARMOR_STAND){
+
+            System.out.println("armor stand interact");
+
+            ArmorStand stand = (ArmorStand)entity;
+            if(stand.getCustomName().equalsIgnoreCase("Machine Armor Stand")){
+                Location pos = stand.getLocation();
+                pos.setX(pos.getX() - 0.5f);
+                pos.setY(pos.getY() + 1.2f);
+                pos.setZ(pos.getZ() - 0.5f);
+
+                System.out.println(pos.toString());
+
+                Machine machine = Machine.get(pos);
+                if(machine != null){
+                    System.out.println("is machine");
+                    ItemStack processed = machine.Use(player.getInventory().getItemInMainHand());
+                    if(processed != null) {
+                        player.getInventory().addItem(processed);
+                        player.getInventory().remove(player.getInventory().getItemInMainHand());
+                        player.sendMessage("Used machine!");
+                        event.setCancelled(true);
+                    }
+                }
+
             }
         }
     }
@@ -133,6 +219,6 @@ public class Events implements Listener {
         }
     }
 
-    
+
 
 }
