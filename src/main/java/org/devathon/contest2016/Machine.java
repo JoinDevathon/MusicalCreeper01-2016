@@ -29,7 +29,7 @@ public class Machine {
         Makes = Material.getMaterial(section.getString("makes").toUpperCase());
       //  Operation = section.getString("operation", "");
         Difference = section.getInt("diff", 8);
-        Damage = section.getInt("Damage", 1);
+        Damage = section.getInt("damage", 1);
 
     }
 

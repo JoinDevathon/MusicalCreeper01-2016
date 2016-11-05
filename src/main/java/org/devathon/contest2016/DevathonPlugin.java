@@ -13,6 +13,8 @@ public class DevathonPlugin extends JavaPlugin {
     public Material MachineBlock = Material.IRON_BLOCK;
     public Material MachineItem = Material.IRON_BLOCK;
 
+    public boolean UseModels = true;
+
     @Override
     public void onEnable() {
         // put your enable code here
@@ -28,6 +30,7 @@ public class DevathonPlugin extends JavaPlugin {
         SignHead = this.getConfig().getString("sign.head");
         MachineBlock = Material.valueOf(this.getConfig().getString("machine.block").toUpperCase());
         MachineItem = Material.valueOf(this.getConfig().getString("machine.item").toUpperCase());
+        UseModels = this.getConfig().getBoolean("machine.usemodels");
         getServer().getPluginManager().registerEvents(new Events(), this);
     }
 

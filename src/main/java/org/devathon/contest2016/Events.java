@@ -1,25 +1,23 @@
 package org.devathon.contest2016;
 
-import java.util.*;
-
-import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.material.MaterialData;
-import org.bukkit.material.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.material.Wood;
+import org.bukkit.material.Sign;
+
+import java.util.ArrayList;
 
 public class Events implements Listener {
 
@@ -77,12 +75,21 @@ public class Events implements Listener {
                     Machine machine = Machine.findSlug(machineSlug);
                     event.getPlayer().sendMessage("Created machine " + machine);
 
-                    ArmorStand stand = event.getPlayer().getLocation().getWorld().spawn(attachedBlock.getLocation(), ArmorStand.class);
-                    stand.setBasePlate(false);
-                    stand.setArms(false);
-                    stand.setHelmet(new ItemStack(DevathonPlugin.INSTANCE.MachineItem, 1, (short)machine.Damage));
-                    stand.setGravity(false);
-                    stand.setInvulnerable(false);
+                    if(DevathonPlugin.INSTANCE.UseModels) {
+                        Location armorStandLoc = attachedBlock.getLocation();
+
+                        armorStandLoc.setX(armorStandLoc.getX() + 0.5f);
+                        armorStandLoc.setY(armorStandLoc.getY() - 1.2f);
+                        armorStandLoc.setZ(armorStandLoc.getZ() + 0.5f);
+
+                        ArmorStand stand = event.getPlayer().getLocation().getWorld().spawn(armorStandLoc, ArmorStand.class);
+                        stand.setBasePlate(false);
+                        stand.setArms(false);
+                        stand.setHelmet(new ItemStack(DevathonPlugin.INSTANCE.MachineItem, 1, (short) machine.Damage));
+                        stand.setGravity(false);
+                        stand.setInvulnerable(false);
+                        stand.setCustomName("Machine Armor Strand");
+                    }
 
                     machine.save(attachedBlock.getLocation());
 
@@ -115,14 +122,17 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onBlockBreak (BlockBreakEvent event){
-        Block block = event.getBlock();
-        if(Machine.has((block.getLocation()))){
-            Machine.remove(block.getLocation());
-            event.getPlayer().sendMessage("Destroyed machine!");
-        }
+    public void onBlockBreak (BlockBreakEvent event) {
+        if (DevathonPlugin.INSTANCE.UseModels) {
+            Block block = event.getBlock();
 
+            if (Machine.has((block.getLocation()))) {
+                Machine.remove(block.getLocation());
+                event.getPlayer().sendMessage("Destroyed machine!");
+            }
+        }
     }
 
+    
 
 }

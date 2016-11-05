@@ -2,7 +2,8 @@ sign:
   head: '[machine]'
 machine:
   block: IRON_BLOCK
-  item: IRON_BLOCK
+  item: WOOD_SWORD
+  usemodels: true
 machines:
   table_saw:
     name: 'Table Saw'
