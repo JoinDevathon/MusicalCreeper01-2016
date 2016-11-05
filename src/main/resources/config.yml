@@ -2,18 +2,13 @@ sign:
   head: '[machine]'
 machine:
   block: IRON_BLOCK
+  item: IRON_BLOCK
 machines:
   table_saw:
     name: 'Table Saw'
     slug: 'saw'
+    desc: 'A more-efficient way of cutting up your logs. Creates 2 times more planks then you get from vanilla crafting'
     takes: LOG
     makes: WOOD
-#    operation: '*'
     diff: 8
-
-#world:
-#  machine:
-#    x: 0
-#    y: 0
-#    z: 0
-#    type: table_saw
+    damage: 2

@@ -8,22 +8,28 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
 
+import java.util.ArrayList;
+
 public class Machine {
 
     public String Name;
     public String Slug;
+    public String Desc;
     public Material Takes;
     public Material Makes;
+    public int Damage = 1;
    // public String Operation;
     public int Difference;
 
     public Machine (ConfigurationSection section){
         Name = section.getString("name", "Default Name");
         Slug = section.getString("slug", "slug");
+        Desc = section.getString("desc", "No Description.");
         Takes = Material.getMaterial(section.getString("takes").toUpperCase());
         Makes = Material.getMaterial(section.getString("makes").toUpperCase());
       //  Operation = section.getString("operation", "");
         Difference = section.getInt("diff", 8);
+        Damage = section.getInt("Damage", 1);
 
     }
 
@@ -146,6 +152,26 @@ public class Machine {
         }
 
         return false;
+
+    }
+
+    public static ArrayList<Machine> getAll (){
+        ArrayList<Machine> machines = new ArrayList<>();
+
+        ConfigurationSection config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("machines");
+
+        if(config != null){
+            for(String key : config.getKeys(false)){
+                ConfigurationSection machineSection = config.getConfigurationSection(key);
+                if(machineSection != null){
+                    machines.add(new Machine(machineSection));
+                }
+            }
+        }else {
+            System.out.println(ChatColor.RED + "The 'machines' section does not exist in the config!");
+
+        }
+        return machines;
 
     }
 

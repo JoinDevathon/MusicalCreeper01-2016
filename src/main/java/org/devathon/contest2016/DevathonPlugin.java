@@ -11,6 +11,7 @@ public class DevathonPlugin extends JavaPlugin {
 
     public String SignHead = "[machine]";
     public Material MachineBlock = Material.IRON_BLOCK;
+    public Material MachineItem = Material.IRON_BLOCK;
 
     @Override
     public void onEnable() {
@@ -26,7 +27,7 @@ public class DevathonPlugin extends JavaPlugin {
 
         SignHead = this.getConfig().getString("sign.head");
         MachineBlock = Material.valueOf(this.getConfig().getString("machine.block").toUpperCase());
-
+        MachineItem = Material.valueOf(this.getConfig().getString("machine.item").toUpperCase());
         getServer().getPluginManager().registerEvents(new Events(), this);
     }
 
