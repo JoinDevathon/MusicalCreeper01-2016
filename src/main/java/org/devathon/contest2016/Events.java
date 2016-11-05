@@ -6,6 +6,9 @@ import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.material.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -68,6 +71,34 @@ public class Events implements Listener {
             }
         }
         System.out.println(event.getLines()[0]);
+    }
+
+    @EventHandler
+    public void onBlockInteract (PlayerInteractEvent event) {
+        if(event.getAction() == Action.RIGHT_CLICK_BLOCK){
+            Machine machine = Machine.get(event.getClickedBlock().getLocation());
+            if(machine != null){
+                Player player = event.getPlayer();
+
+                ItemStack processed = machine.Use(player.getInventory().getItemInMainHand());
+                if(processed != null) {
+                    player.getInventory().addItem(processed);
+                    player.getInventory().remove(player.getInventory().getItemInMainHand());
+                    player.sendMessage("Used machine!");
+                    event.setCancelled(true);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onBlockBreak (BlockBreakEvent event){
+        Block block = event.getBlock();
+        if(Machine.has((block.getLocation()))){
+            Machine.remove(block.getLocation());
+            event.getPlayer().sendMessage("Destroyed machine!");
+        }
+
     }
 
 

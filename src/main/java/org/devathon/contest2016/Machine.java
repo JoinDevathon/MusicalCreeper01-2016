@@ -1,14 +1,12 @@
 package org.devathon.contest2016;
 
-import jdk.nashorn.internal.runtime.regexp.joni.Config;
 import net.md_5.bungee.api.ChatColor;
-import net.minecraft.server.v1_10_R1.Position;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.libs.org.ibex.nestedvm.Interpreter;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.material.MaterialData;
 
 public class Machine {
 
@@ -52,7 +50,8 @@ public class Machine {
             }*/
 
             ItemStack out = new ItemStack(Makes, input.getAmount()*Difference);
-            input.setAmount(0);
+            out.setDurability(input.getDurability());
+
             return out;
 
         }
@@ -98,6 +97,10 @@ public class Machine {
         return null;
     }*/
 
+    private static String getKey (Location pos){
+        return pos.getWorld().getUID() + ":" + pos.getBlockX() + ":" + pos.getBlockY() + ":" + pos.getBlockZ();
+    }
+
     public void save (Location pos){
         ConfigurationSection config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("world");
         if(config == null){
@@ -105,12 +108,45 @@ public class Machine {
             config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("world");
         }
 
-        String key = pos.getWorld() + ":" + pos.getBlockX() + ":" + pos.getBlockY() + ":" + pos.getBlockZ();
-        ConfigurationSection machine = config.createSection(key);
+        ConfigurationSection machine = config.createSection(getKey(pos));
 
         machine.set("type", this.Slug);
 
         DevathonPlugin.INSTANCE.saveConfig();
+    }
+
+    public static void remove (Location pos){
+        ConfigurationSection config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("world");
+        if(config == null){
+            config.set(getKey(pos), null);
+            DevathonPlugin.INSTANCE.saveConfig();
+        }
+    }
+
+    public static Machine get (Location pos){
+        ConfigurationSection config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("world");
+        if(config != null){
+            ConfigurationSection section = config.getConfigurationSection(getKey(pos));
+            if(section != null){
+                String slug = section.getString("type");
+                return Machine.findSlug(slug);
+            }
+        }
+
+        return null;
+    }
+
+    public static boolean has (Location pos){
+        ConfigurationSection config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("world");
+        if(config != null){
+            ConfigurationSection section = config.getConfigurationSection(getKey(pos));
+            if(section != null){
+                return true;
+            }
+        }
+
+        return false;
+
     }
 
 }
