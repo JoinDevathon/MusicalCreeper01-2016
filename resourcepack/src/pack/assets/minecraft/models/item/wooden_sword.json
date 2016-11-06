@@ -7,7 +7,9 @@
 	{"predicate":{"damaged":1,"damage":0.01694915254}, "model":"item/default_machine"},
         {"predicate":{"damaged":1,"damage":0.03389830508}, "model":"item/table_saw"},
         {"predicate":{"damaged":1,"damage":0.05084745762}, "model":"item/jig_saw_table"},
-        {"predicate":{"damaged":1,"damage":0.06779661016}, "model":"item/plane_table"}
+        {"predicate":{"damaged":1,"damage":0.06779661016}, "model":"item/plane_table"},
+        {"predicate":{"damaged":1,"damage":0.0847457627}, "model":"item/iron_plant"}
+
 
 
     ]

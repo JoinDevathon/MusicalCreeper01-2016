@@ -31,3 +31,11 @@ machines:
       sneakmakes: FENCE
       diff: 5
       damage: 4
+  iron_plant:
+      name: 'Iron Plant'
+      slug: 'iron'
+      desc: 'Turns your iron ore into Ingots! 4 Ingots for each ore!'
+      takes: IRON_ORE
+      makes: IRON_INGOT
+      diff: 4
+      damage: 5
