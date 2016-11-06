@@ -2,8 +2,8 @@ sign:
   head: '[machine]'
 machine:
   block: IRON_BLOCK
-  item: WOOD_SWORD
-  usemodels: true
+  item: WOOD_SWORD # The item in the resource pack that has the machine models attached to it as damage values
+  usemodels: true # use resourcepack models or not. DONT CHANGE THIS IF THERE ARE ALREADY MACHINES IN THE WORLD
 machines:
   table_saw:
     name: 'Table Saw'
@@ -13,3 +13,21 @@ machines:
     makes: WOOD
     diff: 8
     damage: 2
+  jig_saw:
+      name: 'Jig Saw'
+      slug: 'jigsaw'
+      desc: 'Turns your wood into planks with more efficiency then archaic vanilla crafting does! Sneaking and using will create fences instead. '
+      takes: WOOD
+      makes: WOOD_STEP
+      sneakmakes: FENCE
+      diff: 2
+      damage: 3
+  plane:
+      name: 'Plane'
+      slug: 'plane'
+      desc: 'Turns your wood into doors! Can make 2 more doors(5) then crafting can.'
+      takes: WOOD
+      makes: WOOD_DOOR
+      sneakmakes: FENCE
+      diff: 5
+      damage: 4

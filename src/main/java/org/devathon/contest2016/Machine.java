@@ -4,6 +4,7 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
@@ -17,6 +18,7 @@ public class Machine {
     public String Desc;
     public Material Takes;
     public Material Makes;
+    public Material SneakMakes;
     public int Damage = 1;
    // public String Operation;
     public int Difference;
@@ -27,6 +29,7 @@ public class Machine {
         Desc = section.getString("desc", "No Description.");
         Takes = Material.getMaterial(section.getString("takes").toUpperCase());
         Makes = Material.getMaterial(section.getString("makes").toUpperCase());
+        SneakMakes = section.getString("sneakmakes") != null ? Material.getMaterial(section.getString("sneakmakes").toUpperCase()) : null;
       //  Operation = section.getString("operation", "");
         Difference = section.getInt("diff", 8);
         Damage = section.getInt("damage", 1);
@@ -37,7 +40,7 @@ public class Machine {
         return mat == Takes;
     }
 
-    public ItemStack Use (ItemStack input){
+    public ItemStack Use (ItemStack input, Player player){
         if(input.getType() == Takes){
 
             /*switch(Operation){
@@ -55,10 +58,17 @@ public class Machine {
                     amount = Difference;
             }*/
 
-            ItemStack out = new ItemStack(Makes, input.getAmount()*Difference);
-            out.setDurability(input.getDurability());
+            if(this.SneakMakes != null && player.isSneaking()){
+                ItemStack out = new ItemStack(SneakMakes, input.getAmount()*Difference);
+                out.setDurability(input.getDurability());
 
-            return out;
+                return out;
+            }else{
+                ItemStack out = new ItemStack(Makes, input.getAmount()*Difference);
+                out.setDurability(input.getDurability());
+
+                return out;
+            }
 
         }
 
@@ -108,6 +118,7 @@ public class Machine {
     }
 
     public void save (Location pos){
+        DevathonPlugin.INSTANCE.reloadConfig();
         ConfigurationSection config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("world");
         if(config == null){
             DevathonPlugin.INSTANCE.getConfig().createSection("world");
@@ -121,15 +132,19 @@ public class Machine {
         DevathonPlugin.INSTANCE.saveConfig();
     }
 
-    public static void remove (Location pos){
+    public static boolean remove (Location pos){
+        DevathonPlugin.INSTANCE.reloadConfig();
         ConfigurationSection config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("world");
-        if(config == null){
+        if(config != null){
             config.set(getKey(pos), null);
             DevathonPlugin.INSTANCE.saveConfig();
+            return true;
         }
+        return false;
     }
 
     public static Machine get (Location pos){
+        DevathonPlugin.INSTANCE.reloadConfig();
         ConfigurationSection config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("world");
         if(config != null){
             ConfigurationSection section = config.getConfigurationSection(getKey(pos));
@@ -143,6 +158,7 @@ public class Machine {
     }
 
     public static boolean has (Location pos){
+        DevathonPlugin.INSTANCE.reloadConfig();
         ConfigurationSection config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("world");
         if(config != null){
             ConfigurationSection section = config.getConfigurationSection(getKey(pos));
@@ -156,10 +172,11 @@ public class Machine {
     }
 
     public static ArrayList<Machine> getAll (){
+        DevathonPlugin.INSTANCE.reloadConfig();
+
         ArrayList<Machine> machines = new ArrayList<>();
 
         ConfigurationSection config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("machines");
-
         if(config != null){
             for(String key : config.getKeys(false)){
                 ConfigurationSection machineSection = config.getConfigurationSection(key);

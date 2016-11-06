@@ -8,16 +8,15 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
+import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.v1_10_R1.inventory.CraftItemStack;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -48,24 +47,23 @@ public class Events implements Listener {
 
         ArrayList<String> bookPages = new ArrayList<>();
 
-        bookPages.add("Welcome to the wonderful world of machines!\nTo create a machine create a sign and make the first line be \"[machine]\", and the second line will be the slug of the machine you want to create.\n\nSee the next pages for all the different machines.");
+        bookPages.add("Welcome to the wonderful world of machines!\nTo create a machine, place a sign and make the first line be \"[machine]\", and the second line will be the slug of the machine you want to create.\n\nSee the next pages for all the different machines.");
 
-        //int currentPageLength = 0;
         String currentPage = "";
         for(Machine m : Machine.getAll()){
-
             currentPage += ChatColor.BOLD + "" + m.Name + " ("+m.Slug+")\n";
             currentPage += ChatColor.RESET + "\n" + m.Desc + "\n";
-            currentPage += "\n" + m.Takes.toString() + " -> " + m.Makes.toString() + "*" + m.Difference;
+            currentPage += "\n " + m.Takes.toString() + " -> " + m.Makes.toString() + "*" + m.Difference;
+            if(m.SneakMakes != null)
+                currentPage += "\n^" + m.Takes.toString() + " -> " + m.SneakMakes.toString() + "*" + m.Difference;
             bookPages.add(currentPage);
+            currentPage = "";
         }
-
-        //bookPages.add("This is page 2!");
-        //bookPages.add("This is page 3!");
 
         meta.setPages(bookPages);
         book.setItemMeta(meta);
         player.getInventory().addItem(book);
+
     }
 
     @EventHandler
@@ -91,6 +89,23 @@ public class Events implements Listener {
                         armorStandLoc.setY(armorStandLoc.getY() - 1.2f);
                         armorStandLoc.setZ(armorStandLoc.getZ() + 0.5f);
 
+                        float yRot = 0;
+
+                        if(s.getAttachedFace() == BlockFace.NORTH){
+                                yRot = -180.0f;
+                        }
+                        if(s.getAttachedFace() == BlockFace.EAST){
+                            yRot = -90.0f;
+                        }
+                        if(s.getAttachedFace() == BlockFace.SOUTH){
+                            yRot = 0f;
+                        }
+                        if(s.getAttachedFace() == BlockFace.WEST){
+                            yRot = 90f;
+                        }
+
+                        armorStandLoc.setYaw(yRot);
+
                         ArmorStand stand = event.getPlayer().getLocation().getWorld().spawn(armorStandLoc, ArmorStand.class);
                         stand.setBasePlate(false);
                         stand.setArms(false);
@@ -106,6 +121,7 @@ public class Events implements Listener {
                         stand.setGravity(false);
                         stand.setInvulnerable(false);
                         stand.setCustomName("Machine Armor Stand");
+                        stand.setVisible(false);
 
                         event.getPlayer().getWorld().getBlockAt(attachedBlock.getLocation()).setType(Material.AIR);
                     }
@@ -119,22 +135,23 @@ public class Events implements Listener {
                 event.getPlayer().sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "Machine sign must be placed on side of block! ");
             }
         }
-        System.out.println(event.getLines()[0]);
     }
 
     @EventHandler
     public void onInteract (PlayerInteractEvent event) {
-        if(event.getAction() == Action.RIGHT_CLICK_BLOCK){
-            Machine machine = Machine.get(event.getClickedBlock().getLocation());
-            if(machine != null){
-                Player player = event.getPlayer();
+        if(!DevathonPlugin.INSTANCE.UseModels) {
+            if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                Machine machine = Machine.get(event.getClickedBlock().getLocation());
+                if (machine != null) {
+                    Player player = event.getPlayer();
 
-                ItemStack processed = machine.Use(player.getInventory().getItemInMainHand());
-                if(processed != null) {
-                    player.getInventory().addItem(processed);
-                    player.getInventory().remove(player.getInventory().getItemInMainHand());
-                    player.sendMessage("Used machine!");
-                    event.setCancelled(true);
+                    ItemStack processed = machine.Use(player.getInventory().getItemInMainHand(), player);
+                    if (processed != null) {
+                        player.getInventory().addItem(processed);
+                        player.getInventory().remove(player.getInventory().getItemInMainHand());
+                        player.sendMessage("Used machine!");
+                        event.setCancelled(true);
+                    }
                 }
             }
         }
@@ -146,8 +163,6 @@ public class Events implements Listener {
         ArmorStand stand = event.getRightClicked();
         if(stand.getCustomName().equalsIgnoreCase("Machine Armor Stand")){
 
-            System.out.println("armour stand clicked");
-
             Player player = event.getPlayer();
 
             Location pos = stand.getLocation();
@@ -155,19 +170,7 @@ public class Events implements Listener {
             pos.setY(pos.getY() + 1.2f);
             pos.setZ(pos.getZ() - 0.5f);
 
-            System.out.println(pos.toString());
-
-            Machine machine = Machine.get(pos);
-            if(machine != null){
-                System.out.println("is machine");
-                ItemStack processed = machine.Use(player.getInventory().getItemInMainHand());
-                if(processed != null) {
-                    player.getInventory().addItem(processed);
-                    player.getInventory().remove(player.getInventory().getItemInMainHand());
-                    player.sendMessage("Used machine!");
-                    event.setCancelled(true);
-                }
-            }
+            UseMachine(pos, player);
             event.setCancelled(true);
         }
 
@@ -179,9 +182,6 @@ public class Events implements Listener {
         Entity entity = event.getRightClicked();
 
         if(entity.getType() == EntityType.ARMOR_STAND){
-
-            System.out.println("armor stand interact");
-
             ArmorStand stand = (ArmorStand)entity;
             if(stand.getCustomName().equalsIgnoreCase("Machine Armor Stand")){
                 Location pos = stand.getLocation();
@@ -189,20 +189,22 @@ public class Events implements Listener {
                 pos.setY(pos.getY() + 1.2f);
                 pos.setZ(pos.getZ() - 0.5f);
 
-                System.out.println(pos.toString());
+                UseMachine(pos, player);
+                event.setCancelled(true);
+            }
+        }
+    }
 
-                Machine machine = Machine.get(pos);
-                if(machine != null){
-                    System.out.println("is machine");
-                    ItemStack processed = machine.Use(player.getInventory().getItemInMainHand());
-                    if(processed != null) {
-                        player.getInventory().addItem(processed);
-                        player.getInventory().remove(player.getInventory().getItemInMainHand());
-                        player.sendMessage("Used machine!");
-                        event.setCancelled(true);
-                    }
-                }
-
+    public void UseMachine (Location pos, Player player){
+        Machine machine = Machine.get(pos);
+        if(machine != null){
+            ItemStack processed = machine.Use(player.getInventory().getItemInMainHand(), player);
+            if(processed != null) {
+                player.getInventory().addItem(processed);
+                player.getInventory().remove(player.getInventory().getItemInMainHand());
+                player.sendMessage("Used machine!");
+                //player.playSound(player.getLocation(), "machine", 1F, 5F);
+                player.getWorld().playSound(player.getLocation(), "machine", 1F, 5F);
             }
         }
     }
@@ -211,11 +213,42 @@ public class Events implements Listener {
     public void onBlockBreak (BlockBreakEvent event) {
         if (DevathonPlugin.INSTANCE.UseModels) {
             Block block = event.getBlock();
+            ProcessDestroy(block.getLocation(), event.getPlayer());
 
-            if (Machine.has((block.getLocation()))) {
-                Machine.remove(block.getLocation());
-                event.getPlayer().sendMessage("Destroyed machine!");
+        }
+    }
+
+    @EventHandler
+    public void onEntityDamaged(EntityDamageByEntityEvent event) {
+        if((event.getEntity() instanceof LivingEntity)){
+            LivingEntity livingEntity = (LivingEntity) event.getEntity();
+            if(livingEntity.getType().equals(EntityType.ARMOR_STAND)){
+                if(event.getDamager() instanceof Player){
+                    Location pos = livingEntity.getLocation();
+
+                    pos.setX(pos.getX() - 0.5f);
+                    pos.setY(pos.getY() + 1.2f);
+                    pos.setZ(pos.getZ() - 0.5f);
+
+
+                    ProcessDestroy(pos, (Player)event.getDamager());
+                    livingEntity.remove();
+                }
             }
+        }
+    }
+
+    public void ProcessDestroy(Location loc, Player player){
+        if (Machine.has((loc))) {
+            Machine.remove(loc);
+            player.sendMessage("Destroyed machine!");
+            ItemStack stack1 = new ItemStack(Material.IRON_INGOT, 3);
+            ItemStack stack2 = new ItemStack(Material.STICK, 8);
+            ItemStack stack3 = new ItemStack(Material.WOOD, 6);
+
+            player.getWorld().dropItem(loc, stack1);
+            player.getWorld().dropItem(loc, stack2);
+            player.getWorld().dropItem(loc, stack3);
         }
     }
 
