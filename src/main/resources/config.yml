@@ -22,15 +22,17 @@ machines:
       sneakmakes: FENCE
       diff: 2
       damage: 3
+      time: 2
   plane:
       name: 'Plane'
       slug: 'plane'
       desc: 'Turns your wood into doors! Can make 2 more doors(5) then crafting can.'
       takes: WOOD
       makes: WOOD_DOOR
-      sneakmakes: FENCE
+      sneakmakes: WOOD_STAIRS
       diff: 5
       damage: 4
+      time: 2
   iron_plant:
       name: 'Iron Plant'
       slug: 'iron'
@@ -39,3 +41,4 @@ machines:
       makes: IRON_INGOT
       diff: 4
       damage: 5
+      time: 2

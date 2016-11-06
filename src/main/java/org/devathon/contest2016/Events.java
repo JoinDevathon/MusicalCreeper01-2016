@@ -26,8 +26,11 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.material.Sign;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
 
 public class Events implements Listener {
+
+
 
     static final int MAX_PAGE_LENGTH = 256;
 
@@ -53,6 +56,7 @@ public class Events implements Listener {
         for(Machine m : Machine.getAll()){
             currentPage += ChatColor.BOLD + "" + m.Name + " ("+m.Slug+")\n";
             currentPage += ChatColor.RESET + "\n" + m.Desc + "\n";
+            currentPage += ChatColor.RESET + "\nSpeed: " + m.Time + "s \n";
             currentPage += "\n " + m.Takes.toString() + " -> " + m.Makes.toString() + "*" + m.Difference;
             if(m.SneakMakes != null)
                 currentPage += "\n^" + m.Takes.toString() + " -> " + m.SneakMakes.toString() + "*" + m.Difference;
@@ -141,17 +145,20 @@ public class Events implements Listener {
     public void onInteract (PlayerInteractEvent event) {
         if(!DevathonPlugin.INSTANCE.UseModels) {
             if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+
                 Machine machine = Machine.get(event.getClickedBlock().getLocation());
                 if (machine != null) {
                     Player player = event.getPlayer();
+                    UseMachine(event.getClickedBlock().getLocation(), player);
 
-                    ItemStack processed = machine.Use(player.getInventory().getItemInMainHand(), player);
-                    if (processed != null) {
-                        player.getInventory().addItem(processed);
+
+                    /*boolean processed = machine.Use(player.getInventory().getItemInMainHand(), player);
+                    if (processed) {
+                        //player.getInventory().addItem(processed);
                         player.getInventory().remove(player.getInventory().getItemInMainHand());
                         player.sendMessage("Used machine!");
                         event.setCancelled(true);
-                    }
+                    }*/
                 }
             }
         }
@@ -198,9 +205,9 @@ public class Events implements Listener {
     public void UseMachine (Location pos, Player player){
         Machine machine = Machine.get(pos);
         if(machine != null){
-            ItemStack processed = machine.Use(player.getInventory().getItemInMainHand(), player);
-            if(processed != null) {
-                player.getInventory().addItem(processed);
+            boolean processed = machine.Use(pos, player.getInventory().getItemInMainHand(), player);
+            if(processed) {
+                //player.getInventory().addItem(processed);
                 player.getInventory().remove(player.getInventory().getItemInMainHand());
                 player.sendMessage("Used machine!");
                 //player.playSound(player.getLocation(), "machine", 1F, 5F);
