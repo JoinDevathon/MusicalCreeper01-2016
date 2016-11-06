@@ -50,10 +50,16 @@ public class Events implements Listener {
 
         ArrayList<String> bookPages = new ArrayList<>();
 
-        bookPages.add("Welcome to the wonderful world of machines!\nTo create a machine, place a sign and make the first line be \"[machine]\", and the second line will be the slug of the machine you want to create.\n\nSee the next pages for all the different machines.");
+        bookPages.add("Welcome to the wonderful world of machines!\nTo create a machine, place a sign and make the first line be \"[machine]\", and the second line will be the slug of the machine you want to create.\n\nSee the next pages for the different machines.");
+
+        ArrayList<Machine> machines = Machine.getAll();
+
+        bookPages.add("Example sign for using the " + machines.get(0).Name + "\n\n\n [machine]\n   "+machines.get(0).Slug );
+
+        bookPages.add("Right click on a machine to process the items your currently holding. \n\nWhile a machine is processing items you can right-click it to see a process count." );
 
         String currentPage = "";
-        for(Machine m : Machine.getAll()){
+        for(Machine m : machines){
             currentPage += ChatColor.BOLD + "" + m.Name + " ("+m.Slug+")\n";
             currentPage += ChatColor.RESET + "\n" + m.Desc + "\n";
             currentPage += ChatColor.RESET + "\nSpeed: " + m.Time + "s \n";
@@ -146,20 +152,8 @@ public class Events implements Listener {
         if(!DevathonPlugin.INSTANCE.UseModels) {
             if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 
-                Machine machine = Machine.get(event.getClickedBlock().getLocation());
-                if (machine != null) {
-                    Player player = event.getPlayer();
-                    UseMachine(event.getClickedBlock().getLocation(), player);
-
-
-                    /*boolean processed = machine.Use(player.getInventory().getItemInMainHand(), player);
-                    if (processed) {
-                        //player.getInventory().addItem(processed);
-                        player.getInventory().remove(player.getInventory().getItemInMainHand());
-                        player.sendMessage("Used machine!");
-                        event.setCancelled(true);
-                    }*/
-                }
+                Player player = event.getPlayer();
+                UseMachine(event.getClickedBlock().getLocation(), player);
             }
         }
 
@@ -246,7 +240,7 @@ public class Events implements Listener {
     }
 
     public void ProcessDestroy(Location loc, Player player){
-        if (Machine.has((loc))) {
+        if (Machine.has(loc)) {
             Machine.remove(loc);
             player.sendMessage("Destroyed machine!");
             ItemStack stack1 = new ItemStack(Material.IRON_INGOT, 3);

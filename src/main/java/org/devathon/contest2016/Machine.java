@@ -15,7 +15,7 @@ import java.util.HashMap;
 
 public class Machine {
 
-    static HashMap<Location, Machine> machines = new HashMap<Location, Machine>();
+    public static HashMap<String, Machine> machines = new HashMap<>();
 
     public String Name;
     public String Slug;
@@ -24,7 +24,6 @@ public class Machine {
     public Material Makes;
     public Material SneakMakes;
     public int Damage = 1;
-   // public String Operation;
     public int Difference;
     public int Time = 2;
 
@@ -39,7 +38,6 @@ public class Machine {
         Takes = Material.getMaterial(section.getString("takes").toUpperCase());
         Makes = Material.getMaterial(section.getString("makes").toUpperCase());
         SneakMakes = section.getString("sneakmakes") != null ? Material.getMaterial(section.getString("sneakmakes").toUpperCase()) : null;
-      //  Operation = section.getString("operation", "");
         Difference = section.getInt("diff", 8);
         Damage = section.getInt("damage", 1);
         Time = section.getInt("time", 2);
@@ -51,26 +49,16 @@ public class Machine {
     }
 
     public boolean Use (Location pos, ItemStack input, Player player){
+
+        if(!machines.containsKey(pos)){
+            machines.put(getKey(pos), this);
+        }
+
         if(running){
             player.sendMessage(org.bukkit.ChatColor.YELLOW + "Running... " + left + "/" + total + " " + (Time*left) +"s.." );
             return false;
         }else {
             if (input.getType() == Takes) {
-
-        /*switch(Operation){
-            case "*":
-            case "times":
-            case "multiplication":
-                amount = input.getAmount() * Difference;
-                break;
-            case "+":
-            case "add":
-            case "addition":
-                amount = input.getAmount() + Difference;
-                break;
-            default:
-                amount = Difference;
-        }*/
                 running = true;
                 total = input.getAmount();
                 left = total;
@@ -89,12 +77,14 @@ public class Machine {
 
                 final Material m = mat;
                 final int t = total;
+                final String k = getKey(pos);
                 for (int i = 0; i < total; ++i) {
                     final int r = i;
                     new BukkitRunnable() {
-
                         @Override
                         public void run() {
+                            if(!machines.containsKey(k))
+                                return;
                             ItemStack out = new ItemStack(m, Difference);
 
                             player.getWorld().dropItemNaturally(dropPos, out);
@@ -105,13 +95,9 @@ public class Machine {
                                 running = false;
                             }
                         }
-
                     }.runTaskLater(DevathonPlugin.INSTANCE, 20 * (Time * i));
                 }
-                //ItemStack out = new ItemStack(SneakMakes, input.getAmount()*Difference);
-                //out.setDurability(input.getDurability());
 
-                //return out;
                 return true;
 
 
@@ -150,19 +136,6 @@ public class Machine {
         return null;
     }
 
-    /*public static Machine find(String id) {
-        ConfigurationSection config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("machines");
-
-        if(config != null){
-            //ConfigurationSection machineConfig
-        }else {
-            System.out.println(ChatColor.RED + "The 'machines' section does not exist in the config!");
-
-        }
-
-        return null;
-    }*/
-
     private static String getKey (Location pos){
         return pos.getWorld().getUID() + ":" + pos.getBlockX() + ":" + pos.getBlockY() + ":" + pos.getBlockZ();
     }
@@ -187,8 +160,8 @@ public class Machine {
         ConfigurationSection config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("world");
         if(config != null){
             config.set(getKey(pos), null);
-            if(machines.containsKey(pos))
-                machines.remove(pos);
+            if(machines.containsKey(getKey(pos)))
+                machines.remove(getKey(pos));
             DevathonPlugin.INSTANCE.saveConfig();
             return true;
         }
@@ -199,17 +172,18 @@ public class Machine {
         DevathonPlugin.INSTANCE.reloadConfig();
         ConfigurationSection config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("world");
         if(config != null){
+            // Get the key for this location in this world
             ConfigurationSection section = config.getConfigurationSection(getKey(pos));
+            // If there is a machine at that location...
             if(section != null){
-                if(machines.containsKey(pos)){
-                    //System.out.println("got from hashmap");
-                    return machines.get(pos);
-                }else {
-                   // System.out.println("creating");
+                //Check if the machine is in the map of the running machines
+                if(!machines.containsKey(getKey(pos))){
                     String slug = section.getString("type");
                     Machine machine = Machine.findSlug(slug);
-                    machines.put(pos, machine);
+                    machines.put(getKey(pos), machine);
                     return machine;
+                }else { // Otherwise create it
+                    return machines.get(getKey(pos));
                 }
             }
         }
@@ -226,9 +200,7 @@ public class Machine {
                 return true;
             }
         }
-
         return false;
-
     }
 
     public static ArrayList<Machine> getAll (){
@@ -237,6 +209,7 @@ public class Machine {
         ArrayList<Machine> machines = new ArrayList<>();
 
         ConfigurationSection config = DevathonPlugin.INSTANCE.getConfig().getConfigurationSection("machines");
+
         if(config != null){
             for(String key : config.getKeys(false)){
                 ConfigurationSection machineSection = config.getConfigurationSection(key);
